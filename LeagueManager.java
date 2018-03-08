@@ -65,31 +65,30 @@ public class LeagueManager {
     }
 
     private static void printBalance() {
+        Map<Boolean, Integer> expMap = new TreeMap<>();
         System.out.println("Team Name - Experienced:Inexperienced");
         for (Team team : teams) {
-            int expCount = 0;
-            int inExpCount = 0;
+            expMap.clear();
+            int c = 0;
             List<Player> teamPlayers = team.getPlayersAsList();
             for (Player player : teamPlayers) {
-                if(player.isPreviousExperience()) {
-                    expCount++;
-                } else {
-                    inExpCount++;
-                }
-            }
-            System.out.printf("%s - %d:%d%n", team.getTeamName(), expCount, inExpCount);
+              if (expMap.get(player.isPreviousExperience()) == null) {
+                expMap.put(player.isPreviousExperience(), 1);
+              } else {
+                c = expMap.get(player.isPreviousExperience());
+                expMap.put(player.isPreviousExperience(), ++c);
+              }
+            }  
+          System.out.printf("%s - %d:%d%n", team.getTeamName(), expMap.get(true), expMap.get(false));
         }
     }
 
     private static void printReport() {
         Scanner scan = new Scanner(System.in);
 
-        Collections.sort(teams);
-        menu.printTeams(teams);
-        System.out.println("Select a team (by number)");
-        int team = scan.nextInt();
+        Team selectedTeam = selectTeam();
 
-        List<Player> teamPlayers = teams.get(team-1).getPlayersAsList();
+        List<Player> teamPlayers = selectedTeam.getPlayersAsList();
 
         ArrayList<String> shorter = new ArrayList<>();
         ArrayList<String> average = new ArrayList<>();
@@ -107,33 +106,30 @@ public class LeagueManager {
             }
         }
 
-        System.out.println("Short Team Members (35-40)");
+        System.out.printf("%d Short Team Members (35-40)%n", shorter.size());
         for (String playerInfo : shorter){
             System.out.println(playerInfo);
         }
-        System.out.println("Average Team Members (41-46)");
+        System.out.printf("%d Average Team Members (41-46)%n", average.size());
         for (String playerInfo : average){
             System.out.println(playerInfo);
         }
-        System.out.println("Tall Team Members (47-50)");
+        System.out.printf("%d Tall Team Members (47-50)%n", taller.size());
         for (String playerInfo : taller){
             System.out.println(playerInfo);
         }
 
-        teams.get(team-1).setExpPerc();
-        System.out.printf("This team consists of %d%% experience%n", teams.get(team-1).getExpPerc());
+        selectedTeam.setExpPerc();
+        System.out.printf("This team consists of %d%% experience%n", selectedTeam.getExpPerc());
 
     }
 
     private static void removeFromTeam() {
         Scanner scan = new Scanner(System.in);
 
-        Collections.sort(teams);
-        menu.printTeams(teams);
-        System.out.println("Select a team (by number)");
-        int team = scan.nextInt();
+        Team selectedTeam = selectTeam();
 
-        List<Player> teamPlayers = teams.get(team-1).getPlayersAsList();
+        List<Player> teamPlayers = selectedTeam.getPlayersAsList();
 
         if(teamPlayers.size() <= 0) {
             System.out.println("No Players to remove");
@@ -144,7 +140,7 @@ public class LeagueManager {
             int player = scan.nextInt();
 
             playerList.add(teamPlayers.get(player - 1));
-            teams.get(team-1).removePlayer(teamPlayers.get(player-1));
+            selectedTeam.removePlayer(teamPlayers.get(player-1));
         }
 
     }
@@ -157,17 +153,14 @@ public class LeagueManager {
         System.out.println("Select a player (by number)");
         int player = scan.nextInt();
 
-        Collections.sort(teams);
-        menu.printTeams(teams);
-        System.out.println("Select a team (by number)");
-        int team = scan.nextInt();
+        Team selectedTeam = selectTeam();
 
-        List<Player> teamPlayers = teams.get(team-1).getPlayersAsList();
+        List<Player> teamPlayers = selectedTeam.getPlayersAsList();
 
         if (teamPlayers.size() >= 11) {
             System.out.println("This team is at capacity");
         } else {
-            teams.get(team-1).addPlayer(players.get(player - 1));
+            selectedTeam.addPlayer(players.get(player - 1));
             players.remove(player - 1);
         }
     }
@@ -197,4 +190,15 @@ public class LeagueManager {
             System.out.println("");
         }
     }
+  
+  private static Team selectTeam() {
+    Scanner scan = new Scanner(System.in);
+    
+    Collections.sort(teams);
+    menu.printTeams(teams);
+    System.out.println("Select a team (by number)");
+    int team = scan.nextInt();
+    
+    return teams.get(team-1);
+  }
 }
